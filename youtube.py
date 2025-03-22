@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # Import CORS
+from flask_cors import CORS
 import google.generativeai as genai
 import requests
 import os
@@ -7,7 +7,7 @@ import os
 app = Flask(__name__)
 
 # Enable CORS for the entire app
-CORS(app)  # This will allow all origins. You can customize this later if needed.
+CORS(app)
 
 # Set API keys from environment variables
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY2")
@@ -31,7 +31,7 @@ def get_search_query(user_query):
 
 def search_youtube(query):
     """Search YouTube for educational videos based on the query."""
-    url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={query}&maxResults=5&type=video&key={YOUTUBE_API_KEY}"
+    url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&q={query}&maxResults=10&type=video&key={YOUTUBE_API_KEY}"
     
     response = requests.get(url)
     data = response.json()
@@ -47,8 +47,11 @@ def search_youtube(query):
 def search():
     user_query = request.args.get("query", "")
 
+    # If no query is provided, return an error message
     if not user_query:
-        return jsonify({"error": "Query parameter is required"}), 400
+        return jsonify({"error": "No query provided."}), 400
+
+    print(f"User query received: {user_query}")  # Log for debugging
 
     search_query = get_search_query(user_query)
     if search_query:
