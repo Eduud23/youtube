@@ -1,14 +1,15 @@
 {
+    "version": 2,
     "builds": [
       {
-        "src": "youtube.py",
+        "src": "youtube.py", 
         "use": "@vercel/python"
       }
     ],
     "routes": [
       {
         "src": "/search",
-        "dest": "youtube.py"
+        "dest": "youtube.py"  
       }
     ]
   }
