@@ -37,10 +37,19 @@ def search_youtube(query):
     data = response.json()
     
     if "items" in data:
-        return [
-            f"https://www.youtube.com/watch?v={item['id']['videoId']}"
-            for item in data["items"]
-        ]
+        video_details = []
+        for item in data["items"]:
+            # Extract the thumbnail URL from the "thumbnails" field
+            thumbnail_url = item["snippet"]["thumbnails"].get("default", {}).get("url", "")
+            
+            video_details.append({
+                "title": item["snippet"]["title"],
+                "url": f"https://www.youtube.com/watch?v={item['id']['videoId']}",
+                "description": item["snippet"].get("description", "No description available."),
+                "channelTitle": item["snippet"]["channelTitle"],
+                "thumbnail": thumbnail_url  # Add thumbnail URL to the response
+            })
+        return video_details
     return []
 
 @app.route("/search", methods=["GET"])
