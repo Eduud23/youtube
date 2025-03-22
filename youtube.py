@@ -1,9 +1,13 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # Import CORS
 import google.generativeai as genai
 import requests
 import os
 
 app = Flask(__name__)
+
+# Enable CORS for the entire app
+CORS(app)  # This will allow all origins. You can customize this later if needed.
 
 # Set API keys from environment variables
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY2")
