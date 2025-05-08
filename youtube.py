@@ -20,13 +20,15 @@ model = genai.GenerativeModel("gemini-2.0-flash")
 def get_search_query(user_query):
     """Generate a simplified search query using Gemini AI."""
     prompt = f"Convert this into a simple educational YouTube search query: {user_query}"
-    
-    response = model.generate_content(prompt)
-    search_query = response.text.strip()
-    
-    if len(search_query.split()) > 20:
-        return None
-    return search_query
+
+    try:
+        response = model.generate_content(prompt)
+        search_query = response.text.strip()
+
+        return search_query
+    except Exception as e:
+        print(f"Gemini error: {e}")
+        return user_query  
 
 def search_youtube(query):
     """Search YouTube for educational videos based on the query."""
