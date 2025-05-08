@@ -24,8 +24,7 @@ def get_search_query(user_query):
     response = model.generate_content(prompt)
     search_query = response.text.strip()
     
-    # If Gemini outputs something too complex, return None
-    if len(search_query.split()) > 10:  # Arbitrary complexity check
+    if len(search_query.split()) > 20:
         return None
     return search_query
 
