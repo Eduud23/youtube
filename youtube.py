@@ -3,10 +3,9 @@ from flask_cors import CORS
 import google.generativeai as genai
 import requests
 import os
+import re
 
 app = Flask(__name__)
-
-# Enable CORS for the entire app
 CORS(app)
 
 # Set API keys from environment variables
@@ -18,17 +17,23 @@ genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
 def get_search_query(user_query):
-    """Generate a simplified search query using Gemini AI."""
-    prompt = f"Convert this into a simple educational YouTube search query: {user_query}"
+    """Generate a simplified search query using Gemini AI and extract the first suggestion."""
+    prompt = f"Convert this into a short and simple YouTube search query for an educational video: {user_query}"
 
     try:
         response = model.generate_content(prompt)
-        search_query = response.text.strip()
+        full_text = response.text.strip()
 
-        return search_query
+        # Extract the first quoted string (e.g., "how to change a tire")
+        match = re.search(r'"([^"]+)"', full_text)
+        if match:
+            return match.group(1)
+        else:
+            # If no quotes found, fallback to first line or the entire response
+            return full_text.splitlines()[0]
     except Exception as e:
         print(f"Gemini error: {e}")
-        return user_query  
+        return user_query  # Fallback to original query
 
 def search_youtube(query):
     """Search YouTube for educational videos based on the query."""
@@ -40,7 +45,6 @@ def search_youtube(query):
     if "items" in data:
         video_details = []
         for item in data["items"]:
-            # Extract the thumbnail URL from the "thumbnails" field
             thumbnail_url = item["snippet"]["thumbnails"].get("default", {}).get("url", "")
             
             video_details.append({
@@ -48,7 +52,7 @@ def search_youtube(query):
                 "url": f"https://www.youtube.com/watch?v={item['id']['videoId']}",
                 "description": item["snippet"].get("description", "No description available."),
                 "channelTitle": item["snippet"]["channelTitle"],
-                "thumbnail": thumbnail_url  # Add thumbnail URL to the response
+                "thumbnail": thumbnail_url
             })
         return video_details
     return []
@@ -57,11 +61,10 @@ def search_youtube(query):
 def search():
     user_query = request.args.get("query", "")
 
-    # If no query is provided, return an error message
     if not user_query:
         return jsonify({"error": "No query provided."}), 400
 
-    print(f"User query received: {user_query}")  # Log for debugging
+    print(f"User query received: {user_query}")  # Debugging
 
     search_query = get_search_query(user_query)
     if search_query:
